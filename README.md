@@ -40,15 +40,6 @@ Choose bosses: For each boss you plan to clear, select the difficulty (e.g., Har
 
 Click Calculate: The progress panel will update with your weekly traces, monthly traces, total traces required, number of weekly resets needed, expected liberation period, and the projected date your weapon will be liberated.
 
-Hosting as a Shareable Site
-
-You can host this static site on GitHub Pages so others can access it without downloading files:
-
-Commit the contents of this repository to your GitHub repo (e.g., RayRBM/Code) in a folder named docs or to the repository root (rename index.html accordingly).
-
-Enable GitHub Pages in your repository settings, selecting the docs folder (or the root) as the source. GitHub will build the page and provide a URL of the form https://<your-username>.github.io/<repo-name>/ (for example, https://rayrbm.github.io/Code/). The .app domain you saw on MapleHub is just another static hosting service; GitHub Pages is free and integrates directly with your repository.
-
-Share the link once GitHub Pages has deployed your site. The calculator will be fully functional via the browser.
 
 Credits and Sources
 
