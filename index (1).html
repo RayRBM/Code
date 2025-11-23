@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MapleStory Genesis Liberation Calculator</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f7f7fa;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    fieldset {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      padding: 10px 15px;
+    }
+    fieldset legend {
+      padding: 0 5px;
+      font-weight: bold;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    select, input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 6px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-top: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+      background-color: #3b82f6;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      background-color: #9aa7c7;
+      cursor: default;
+    }
+    .result {
+      background-color: #e9f5ff;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    .note {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 5px;
+    }
+    .citation {
+      font-size: 0.8em;
+      margin-top: 15px;
+      color: #777;
+    }
+
+    /* Difficulty button group */
+    .diff-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .diff-option {
+      position: relative;
+      cursor: pointer;
+    }
+    .diff-option input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .diff-option span {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 16px;
+      background-color: #e5e7eb;
+      color: #333;
+      font-size: 0.85em;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .diff-option input:checked + span {
+      background-color: #3b82f6;
+      color: #fff;
+    }
+
+    /* Toggle switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 20px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    .switch input:checked + .slider {
+      background-color: #3b82f6;
+    }
+    .switch input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+  </style>
+  <!-- Dark theme styles overriding the default styles -->
+  <style>
+    :root {
+      /* Primary colours used throughout the dark theme.  
+         The accent colour is used for primary actions and progress indicators.  
+         An alternate accent is defined for secondary highlights (e.g. monthly traces). */
+      --bg-color: #090e23;
+      --panel-bg: #0f1739;
+      --accent: #7f5af0;
+      --accent-light: #9c8ffb;
+      --accent-alt: #0db2f2;
+      --text-primary: #e5e7eb;
+      --text-secondary: #a1a6c7;
+      --border-color: #1f2949;
+      --success: #3fb950;
+    }
+    body {
+      background: var(--bg-color);
+      color: var(--text-primary);
+      padding: 0;
+      margin: 0;
+    }
+    h1, h2, h3, h4 {
+      color: var(--text-primary);
+      margin: 0;
+      font-weight: 600;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 0.75rem;
+    }
+    .topnav {
+      display: flex;
+      align-items: center;
+      background: var(--panel-bg);
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .topnav .title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .main {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    }
+    .progress-panel {
+      flex: 1 1 260px;
+      min-width: 260px;
+      max-width: 320px;
+    }
+    .config-panel {
+      flex: 2 1 500px;
+      min-width: 300px;
+    }
+    .form-section {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    select, input[type="number"], input[type="date"], input[type="text"] {
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.9rem;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-primary);
+    }
+    select option {
+      color: #000;
+    }
+    input[type="checkbox"] {
+      margin-right: 0.5rem;
+    }
+    .boss-table {
+      width: 100%;
+      /* convert to block so we can control spacing between rows */
+      display: block;
+      margin-top: 0.5rem;
+      border-collapse: separate;
+      border-spacing: 0 0.5rem;
+    }
+    .boss-table thead {
+      display: none;
+    }
+    .boss-table tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .boss-table tr {
+      /* card-like row styling */
+      background: #131b3e;
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: 2fr 4fr 1fr 1.7fr;
+      align-items: center;
+      padding: 0.5rem;
+    }
+    .boss-table td {
+      border: none;
+      padding: 0.25rem;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+    }
+    .boss-table td:first-child {
+      font-weight: 600;
+    }
+    .boss-table td:last-child {
+      display: flex;
+      align-items: center;
+    }
+    .diff-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .diff-option {
+      position: relative;
+      cursor: pointer;
+    }
+    .diff-option input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .diff-option span {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      background-color: #1f2949;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .diff-option input:checked + span {
+      background-color: var(--accent);
+      color: #fff;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 18px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #374072;
+      transition: .4s;
+      border-radius: 18px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    .switch input:checked + .slider {
+      background-color: var(--accent);
+    }
+    .switch input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+
+    .cleared-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      background-color: var(--accent);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    .btn:disabled {
+      background-color: #5e6b9b;
+      cursor: default;
+    }
+    .note {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+    .progress-section {
+      margin-bottom: 1rem;
+    }
+    .progress-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Statistics list for progress panel */
+    .stats-list {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      list-style: none;
+    }
+    .stats-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .stats-list li strong {
+      color: var(--text-primary);
+    }
+    .stats-list li span {
+      flex: 1;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem 1rem;
+      margin-top: 0.5rem;
+    }
+    .stats-grid .stat-box {
+      background: #131b3e;
+      border-radius: 6px;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    .stats-grid .stat-box strong {
+      display: block;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .week-bars {
+      display: flex;
+      gap: 4px;
+      margin-top: 0.5rem;
+    }
+    .week-bar {
+      flex: 1;
+      height: 8px;
+      border-radius: 4px;
+      background-color: #374072;
+      position: relative;
+    }
+    .week-bar .fill {
+      height: 100%;
+      border-radius: 4px;
+      background-color: var(--accent);
+      width: 0%;
+    }
+    .week-values {
+      display: flex;
+      gap: 4px;
+      margin-top: 0.2rem;
+    }
+    .week-value {
+      flex: 1;
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+    }
+    /* Progress bar styles */
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: #374072;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.25rem;
+    }
+    .progress-bar {
+      height: 100%;
+      background-color: var(--accent);
+      border-radius: 4px;
+    }
+    /* Trace source list styling */
+    .trace-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0;
+    }
+    .trace-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .trace-list li .label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .trace-list li .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .trace-list li .dot.weekly {
+      background-color: var(--accent);
+    }
+    .trace-list li .dot.monthly {
+      background-color: var(--accent-alt);
+    }
+    @media (max-width: 768px) {
+      .main {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top navigation bar -->
+  <div class="topnav">
+    <div class="title">Genesis Liberation Calculator</div>
+  </div>
+  <!-- Main content area: progress panel and configuration panel -->
+  <div class="main">
+    <div id="progressPanel" class="progress-panel panel">
+      <h2>Liberation Progress</h2>
+      <div id="progressContent">
+        <p class="note">Use the configuration form to estimate your liberation timeline.</p>
+      </div>
+    </div>
+    <div class="config-panel panel">
+      <div class="form-section">
+        <h2>Configuration</h2>
+        <label for="stage">Current Quest Stage</label>
+        <select id="stage">
+          <option value="0">Traces of the Lion King (Von Leon) – 500 traces</option>
+          <option value="1">Traces of the High Priest (Arkarium) – 500 traces</option>
+          <option value="2">Traces of the Tyrant (Magnus) – 500 traces</option>
+          <option value="3">Traces of the Wing Master (Lotus) – 1,000 traces</option>
+          <option value="4">Traces of the Sword of Destruction (Damien) – 1,000 traces</option>
+          <option value="5">Traces of the Spider King (Will) – 1,000 traces</option>
+          <option value="6">Traces of the Master of Nightmares (Lucid) – 1,000 traces</option>
+          <option value="7">Traces of the Red Witch (Verus Hilla) – 1,000 traces</option>
+        </select>
+        <label for="currentTraces">Current Traces Held</label>
+        <input id="currentTraces" type="number" min="0" step="1" value="0">
+        <label for="startDate">Start Date</label>
+        <input id="startDate" type="date">
+        <label class="checkbox-label"><input id="genesisPass" type="checkbox"> Genesis Pass Active (3× traces)</label>
+      </div>
+      <div class="form-section">
+        <h2>Boss Selection</h2>
+        <table class="boss-table">
+          <thead>
+            <tr>
+              <th>Boss</th>
+              <th>Difficulty</th>
+              <th>Party Size</th>
+              <th>Cleared This Week/Month</th>
+            </tr>
+          </thead>
+          <tbody id="bossTableBody">
+            <!-- Rows injected via JavaScript -->
+          </tbody>
+        </table>
+        <p class="note">Track your weekly boss clears. Mark bosses as <em>Cleared</em> when you defeat them this week. Weekly bosses reset every Thursday at 12:00 AM PST. Monthly bosses reset on the first calendar day of each month.</p>
+      </div>
+      <button id="calculateBtn" class="btn">Calculate</button>
+    </div>
+  </div>
+  <div id="result" class="panel" style="display:none;"></div>
+  <script>
+    // Mission requirements (stage index corresponds to option index)
+    const missionRequirements = [500, 500, 500, 1000, 1000, 1000, 1000, 1000];
+    // Boss data: name, base trace values per difficulty, isMonthly
+    const bossData = [
+      {
+        name: 'Lotus',
+        difficulties: { 'None': 0, 'Normal': 10, 'Hard': 50, 'Extreme': 50 },
+        monthly: false
+      },
+      {
+        name: 'Damien',
+        difficulties: { 'None': 0, 'Normal': 10, 'Hard': 50 },
+        monthly: false
+      },
+      {
+        name: 'Lucid',
+        difficulties: { 'None': 0, 'Easy': 15, 'Normal': 20, 'Hard': 65 },
+        monthly: false
+      },
+      {
+        name: 'Will',
+        difficulties: { 'None': 0, 'Easy': 15, 'Normal': 25, 'Hard': 75 },
+        monthly: false
+      },
+      {
+        name: 'Gloom',
+        difficulties: { 'None': 0, 'Normal': 20, 'Chaos': 65 },
+        monthly: false
+      },
+      {
+        name: 'Darknell',
+        difficulties: { 'None': 0, 'Normal': 25, 'Hard': 75 },
+        monthly: false
+      },
+      {
+        name: 'Verus Hilla',
+        difficulties: { 'None': 0, 'Normal': 45, 'Hard': 90 },
+        monthly: false
+      },
+      {
+        name: 'Black Mage',
+        difficulties: { 'None': 0, 'Hard': 600, 'Extreme': 600 },
+        monthly: true
+      }
+    ];
+
+    // Create rows for each boss with difficulty buttons, party size, and cleared toggle
+    const tbody = document.getElementById('bossTableBody');
+    bossData.forEach((boss, idx) => {
+      const tr = document.createElement('tr');
+      // Boss name
+      const tdName = document.createElement('td');
+      tdName.textContent = boss.name;
+      tr.appendChild(tdName);
+      // Difficulty selector as segmented radio buttons
+      const tdDiff = document.createElement('td');
+      const diffGroup = document.createElement('div');
+      diffGroup.className = 'diff-group';
+      // Create radio buttons for each difficulty
+      Object.entries(boss.difficulties).forEach(([diffName, baseVal]) => {
+        const label = document.createElement('label');
+        label.className = 'diff-option';
+        // radio input
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = `difficulty-${idx}`;
+        radio.value = diffName;
+        if (diffName === 'None') {
+          radio.checked = true;
+        }
+        // span showing difficulty name and base value if applicable
+        const span = document.createElement('span');
+        span.className = 'diff-label';
+        span.textContent = diffName + (diffName !== 'None' ? ` (${baseVal})` : '');
+        label.appendChild(radio);
+        label.appendChild(span);
+        diffGroup.appendChild(label);
+      });
+      tdDiff.appendChild(diffGroup);
+      tr.appendChild(tdDiff);
+      // Party size selector with id for retrieval
+      const tdParty = document.createElement('td');
+      const sizeSelect = document.createElement('select');
+      sizeSelect.id = `party-size-${idx}`;
+      for (let i = 1; i <= 6; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        sizeSelect.appendChild(opt);
+      }
+      sizeSelect.value = 1;
+      tdParty.appendChild(sizeSelect);
+      tr.appendChild(tdParty);
+      // Cleared toggle
+      const tdCleared = document.createElement('td');
+      const clearedLabel = document.createElement('label');
+      clearedLabel.className = 'switch';
+      const clearedInput = document.createElement('input');
+      clearedInput.type = 'checkbox';
+      clearedInput.id = `cleared-${idx}`;
+      // slider span for the switch
+      const slider = document.createElement('span');
+      slider.className = 'slider';
+      clearedLabel.appendChild(clearedInput);
+      clearedLabel.appendChild(slider);
+      tdCleared.appendChild(clearedLabel);
+      // Label text to indicate clearing state
+      const clearedText = document.createElement('span');
+      clearedText.textContent = 'Not cleared';
+      clearedText.style.marginLeft = '8px';
+      clearedText.className = 'cleared-label';
+      tdCleared.appendChild(clearedText);
+      tr.appendChild(tdCleared);
+      tbody.appendChild(tr);
+    });
+
+    // Set default start date to today
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('startDate').value = today;
+    });
+
+    document.getElementById('calculateBtn').addEventListener('click', () => {
+      // Read inputs
+      const stageIdx = parseInt(document.getElementById('stage').value);
+      const currentTraces = parseInt(document.getElementById('currentTraces').value) || 0;
+      const startDateVal = document.getElementById('startDate').value;
+      if (!startDateVal) {
+        alert('Please select a start date.');
+        return;
+      }
+      const startDate = new Date(startDateVal + 'T00:00:00');
+      const passActive = document.getElementById('genesisPass').checked;
+      // Compute total required traces from current stage through end
+      let requiredTraces = 0;
+      for (let i = stageIdx; i < missionRequirements.length; i++) {
+        requiredTraces += missionRequirements[i];
+      }
+      // Remaining traces needed after accounting for current traces
+      const remainingTraces = Math.max(0, requiredTraces - currentTraces);
+      // Compute weekly and monthly traces, and the total immediate gain from bosses not yet cleared
+      let weeklyTraces = 0;
+      let monthlyTraces = 0;
+      let immediateGain = 0;
+      bossData.forEach((boss, index) => {
+        // selected difficulty
+        const diffInput = document.querySelector(`input[name='difficulty-${index}']:checked`);
+        const diff = diffInput ? diffInput.value : 'None';
+        const base = boss.difficulties[diff] || 0;
+        // party size
+        const sizeSelectEl = document.getElementById(`party-size-${index}`);
+        const size = sizeSelectEl ? parseInt(sizeSelectEl.value) : 1;
+        // per-person trace value, floor division
+        let perPerson = 0;
+        if (base > 0 && size > 0) {
+          perPerson = Math.floor(base / size);
+        }
+        // apply Genesis Pass multiplier
+        const adjusted = passActive ? perPerson * 3 : perPerson;
+        // accumulate weekly or monthly traces used for resets
+        if (boss.monthly) {
+          monthlyTraces += adjusted;
+        } else {
+          weeklyTraces += adjusted;
+        }
+        // immediate gain if boss not yet cleared for current period
+        const clearedEl = document.getElementById(`cleared-${index}`);
+        const isCleared = clearedEl ? clearedEl.checked : false;
+        if (!isCleared && adjusted > 0) {
+          immediateGain += adjusted;
+        }
+      });
+      // If no traces are selected at all, alert the user
+      if (weeklyTraces === 0 && monthlyTraces === 0) {
+        alert('No bosses selected; please choose at least one boss and difficulty.');
+        return;
+      }
+      // Remaining traces after immediate gains
+      let remaining = Math.max(0, remainingTraces - immediateGain);
+
+      // Determine timeline respecting weekly and monthly reset dates
+      let currentDate = new Date(startDate);
+      // Always consider resets at midnight
+      currentDate.setHours(0, 0, 0, 0);
+      let weeklyResets = 0;
+
+      // Helper to compute next weekly reset (Thursday 00:00 local time)
+      function nextWeeklyReset(date) {
+        const d = new Date(date);
+        const day = d.getDay(); // 0=Sun, 4=Thu
+        let diff = (4 - day + 7) % 7;
+        if (diff === 0) {
+          // If today is Thursday reset day, move to next week
+          diff = 7;
+        }
+        d.setDate(d.getDate() + diff);
+        d.setHours(0, 0, 0, 0);
+        return d;
+      }
+      // Helper to compute next monthly reset (1st day of next month at midnight)
+      function nextMonthlyReset(date) {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const next = new Date(year, month + 1, 1);
+        next.setHours(0, 0, 0, 0);
+        return next;
+      }
+      // Apply resets until enough traces accumulated or we hit a limit
+      let safetyCounter = 0;
+      while (remaining > 0 && safetyCounter < 2000) {
+        safetyCounter++;
+        const nextWeek = nextWeeklyReset(currentDate);
+        const nextMonth = nextMonthlyReset(currentDate);
+        if (nextMonth.getTime() < nextWeek.getTime()) {
+          // Monthly reset occurs before the next weekly reset
+          currentDate = nextMonth;
+          if (monthlyTraces > 0) {
+            remaining -= monthlyTraces;
+          }
+          continue;
+        } else if (nextMonth.getTime() > nextWeek.getTime()) {
+          // Weekly reset occurs first
+          currentDate = nextWeek;
+          if (weeklyTraces > 0) {
+            remaining -= weeklyTraces;
+            weeklyResets++;
+          }
+          // If the weekly reset date is also the first of the month, apply monthly traces as well
+          if (currentDate.getDate() === 1 && monthlyTraces > 0) {
+            remaining -= monthlyTraces;
+          }
+          continue;
+        } else {
+          // Both resets occur on the same day (first of month is on a Thursday)
+          currentDate = nextWeek;
+          if (weeklyTraces > 0) {
+            remaining -= weeklyTraces;
+            weeklyResets++;
+          }
+          if (monthlyTraces > 0) {
+            remaining -= monthlyTraces;
+          }
+          continue;
+        }
+      }
+      // Compute progress and populate progress panel
+      const progressTraces = currentTraces + immediateGain;
+      const progressPercent = requiredTraces > 0 ? Math.min(100, (progressTraces / requiredTraces) * 100) : 0;
+      const fourWeekTotal = weeklyTraces * 4 + monthlyTraces;
+      const expectedWeeks = weeklyResets;
+      const expectedMonths = (expectedWeeks / 4).toFixed(1);
+      const finishStr = remaining > 0 ? '—' : currentDate.toISOString().split('T')[0];
+      const progressContent = document.getElementById('progressContent');
+      let progHtml = '';
+      // Liberation date section
+      progHtml += `<div class="progress-section">`;
+      progHtml += `<span class="progress-value">${finishStr !== '—' ? finishStr : '--/--/----'}</span>`;
+      progHtml += `<div class="note">Target liberation date</div>`;
+      progHtml += `</div>`;
+      // Progress bar and current progress
+      progHtml += `<div class="note" style="margin-top:0.5rem;">Current Progress</div>`;
+      progHtml += `<div class="progress-bar-container"><div class="progress-bar" style="width:${progressPercent}%"></div></div>`;
+      progHtml += `<div class="note">${progressTraces.toLocaleString()} / ${requiredTraces.toLocaleString()} traces (${progressPercent.toFixed(1)}%)</div>`;
+      // Trace sources section
+      progHtml += `<div class="progress-section" style="margin-top:1rem;">`;
+      progHtml += `<div class="note" style="margin-bottom:0.25rem;">Trace Sources</div>`;
+      progHtml += `<ul class="trace-list">`;
+      progHtml += `<li><span class="label"><span class="dot weekly"></span>Weekly traces</span><strong>${weeklyTraces.toLocaleString()}</strong></li>`;
+      if (monthlyTraces > 0) {
+        progHtml += `<li><span class="label"><span class="dot monthly"></span>Black Mage (monthly)</span><strong>${monthlyTraces.toLocaleString()}</strong></li>`;
+      }
+      progHtml += `<li><span class="label"><span class="dot weekly"></span>4‑week total</span><strong>${fourWeekTotal.toLocaleString()}</strong></li>`;
+      progHtml += `</ul>`;
+      progHtml += `</div>`;
+      // Detailed statistics section
+      progHtml += `<div class="progress-section" style="margin-top:1rem;">`;
+      progHtml += `<div class="note" style="margin-bottom:0.25rem;">Detailed Statistics</div>`;
+      progHtml += `<div class="stats-grid">`;
+      // Total acquisition traces
+      progHtml += `<div class="stat-box"><strong>Total acquisition traces</strong><div>${weeklyTraces.toLocaleString()} / week`;
+      if (monthlyTraces > 0) {
+        progHtml += ` + ${monthlyTraces.toLocaleString()} / month`;
+      }
+      progHtml += `</div></div>`;
+      // Acquisition/demand traces
+      progHtml += `<div class="stat-box"><strong>Acquisition/demand traces</strong><div>${progressTraces.toLocaleString()} / ${requiredTraces.toLocaleString()}</div></div>`;
+      // Expected period
+      progHtml += `<div class="stat-box"><strong>Expected liberation period</strong><div>${expectedWeeks} week${expectedWeeks === 1 ? '' : 's'} (${expectedMonths} month${expectedMonths === '1.0' ? '' : 's'})</div></div>`;
+      progHtml += `</div>`;
+      progHtml += `</div>`;
+      // Weekly accumulation chart
+      progHtml += `<div class="progress-section" style="margin-top:1rem;">`;
+      progHtml += `<div class="note" style="margin-bottom:0.25rem;">Weekly accumulation</div>`;
+      // Bars
+      progHtml += '<div class="week-bars">';
+      const maxVal = fourWeekTotal > 0 ? fourWeekTotal : 1;
+      const weekValues = [];
+      weekValues.push(weeklyTraces);
+      weekValues.push(weeklyTraces);
+      weekValues.push(weeklyTraces);
+      weekValues.push(weeklyTraces + monthlyTraces);
+      weekValues.forEach(val => {
+        const width = maxVal > 0 ? (val / maxVal) * 100 : 0;
+        progHtml += `<div class="week-bar"><div class="fill" style="width:${width}%"></div></div>`;
+      });
+      progHtml += '</div>';
+      // Values below the bars
+      progHtml += '<div class="week-values">';
+      weekValues.forEach(val => {
+        progHtml += `<div class="week-value">${val.toLocaleString()}</div>`;
+      });
+      progHtml += '</div>';
+      progHtml += '</div>';
+      progressContent.innerHTML = progHtml;
+      // Prepare textual result summary for additional details (hidden panel)
+      const resultDiv = document.getElementById('result');
+      let resultHtml = '';
+      resultHtml += `<p><strong>Total traces needed:</strong> ${requiredTraces.toLocaleString()}</p>`;
+      resultHtml += `<p><strong>Weekly traces:</strong> ${weeklyTraces.toLocaleString()}${monthlyTraces > 0 ? ` (+${monthlyTraces.toLocaleString()} monthly)` : ''}</p>`;
+      if (remaining > 0) {
+        resultHtml += '<p>With the current selections, liberation is not achievable within a reasonable timeframe.</p>';
+      } else {
+        resultHtml += `<p><strong>Weekly resets needed:</strong> ${weeklyResets}</p>`;
+        resultHtml += `<p><strong>Estimated liberation date:</strong> ${finishStr}</p>`;
+      }
+      resultDiv.innerHTML = resultHtml;
+      resultDiv.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
