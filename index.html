@@ -160,6 +160,11 @@
     .switch input:checked + .slider:before {
       transform: translateX(20px);
     }
+    /* Calendar icon visibility for dark theme */
+    /* The date picker icon is dark by default. Invert it on dark backgrounds so it is visible. */
+    body:not(.light) input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
   </style>
   <!-- Dark theme styles overriding the default styles -->
   <style>
@@ -176,6 +181,28 @@
       --text-secondary: #a1a6c7;
       --border-color: #1f2949;
       --success: #3fb950;
+
+      /* Card and bar backgrounds for the dark theme */
+      --card-bg: #131b3e;
+      --bar-bg: #374072;
+      --diff-bg: #1f2949;
+    }
+
+    /* Light theme variables. When the body has the class `light`, these values override the defaults. */
+    body.light {
+      --bg-color: #f7f7fa;
+      --panel-bg: #ffffff;
+      --accent: #3b82f6;
+      --accent-light: #60a5fa;
+      --accent-alt: #0db2f2;
+      --text-primary: #333333;
+      --text-secondary: #555555;
+      --border-color: #dddddd;
+
+      /* Override card and bar backgrounds for the light theme */
+      --card-bg: #f5f7ff;
+      --bar-bg: #ccd4e5;
+      --diff-bg: #e5e7eb;
     }
     body {
       background: var(--bg-color);
@@ -208,6 +235,18 @@
       font-size: 1.2rem;
       font-weight: 700;
       color: var(--accent);
+    }
+
+    /* Theme switch styling within the top navigation */
+    .theme-switch {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .theme-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
     }
     .main {
       display: flex;
@@ -275,7 +314,7 @@
     }
     .boss-table tr {
       /* card-like row styling */
-      background: #131b3e;
+      background: var(--card-bg);
       border-radius: 8px;
       display: grid;
       grid-template-columns: 2fr 4fr 1fr 1.7fr;
@@ -313,7 +352,7 @@
       display: inline-block;
       padding: 4px 8px;
       border-radius: 12px;
-      background-color: #1f2949;
+      background-color: var(--diff-bg);
       color: var(--text-secondary);
       font-size: 0.75rem;
       transition: background-color 0.2s, color 0.2s;
@@ -340,7 +379,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: #374072;
+      background-color: var(--bar-bg);
       transition: .4s;
       border-radius: 18px;
     }
@@ -387,6 +426,33 @@
       color: var(--text-secondary);
       margin-top: 0.5rem;
     }
+
+    /* Preset buttons container */
+    .boss-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .boss-header h2 {
+      margin: 0;
+    }
+    .preset-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .preset-btn {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+      background-color: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .preset-btn:hover {
+      filter: brightness(1.1);
+    }
     .progress-section {
       margin-bottom: 1rem;
     }
@@ -423,7 +489,7 @@
       margin-top: 0.5rem;
     }
     .stats-grid .stat-box {
-      background: #131b3e;
+      background: var(--card-bg);
       border-radius: 6px;
       padding: 0.5rem;
       font-size: 0.8rem;
@@ -443,7 +509,7 @@
       flex: 1;
       height: 8px;
       border-radius: 4px;
-      background-color: #374072;
+      background-color: var(--bar-bg);
       position: relative;
     }
     .week-bar .fill {
@@ -467,7 +533,7 @@
     .progress-bar-container {
       width: 100%;
       height: 8px;
-      background: #374072;
+      background: var(--bar-bg);
       border-radius: 4px;
       overflow: hidden;
       margin-top: 0.25rem;
@@ -519,6 +585,14 @@
   <!-- Top navigation bar -->
   <div class="topnav">
     <div class="title">Genesis Liberation Calculator</div>
+    <!-- Theme toggle switch -->
+    <div class="theme-switch">
+      <label class="switch">
+        <input id="themeToggle" type="checkbox" checked>
+        <span class="slider"></span>
+      </label>
+      <span id="themeLabel" class="theme-label">Dark</span>
+    </div>
   </div>
   <!-- Main content area: progress panel and configuration panel -->
   <div class="main">
@@ -549,7 +623,16 @@
         <label class="checkbox-label"><input id="genesisPass" type="checkbox"> Genesis Pass Active (3× traces)</label>
       </div>
       <div class="form-section">
-        <h2>Boss Selection</h2>
+        <!-- Boss selection header with preset buttons aligned to the right -->
+        <div class="boss-header">
+          <h2>Boss Selection</h2>
+          <!-- Preset buttons for quickly selecting all bosses and party sizes -->
+          <div class="preset-buttons">
+            <button type="button" id="noobPreset" class="preset-btn">Noob</button>
+            <button type="button" id="expertPreset" class="preset-btn">Expert/RayRB Level</button>
+            <button type="button" id="toggleClearedPreset" class="preset-btn">Toggle Clears</button>
+          </div>
+        </div>
         <table class="boss-table">
           <thead>
             <tr>
@@ -898,6 +981,231 @@
       resultDiv.innerHTML = resultHtml;
       resultDiv.style.display = 'block';
     });
+
+    /**
+     * Persist the current selections and theme to localStorage
+     */
+    function saveState() {
+      try {
+        const state = {};
+        state.stageIdx = document.getElementById('stage').value;
+        state.currentTraces = document.getElementById('currentTraces').value;
+        state.startDate = document.getElementById('startDate').value;
+        state.genesisPass = document.getElementById('genesisPass').checked;
+        state.theme = document.body.classList.contains('light') ? 'light' : 'dark';
+        // save boss settings
+        state.bosses = bossData.map((boss, index) => {
+          const difficulty = (document.querySelector(`input[name='difficulty-${index}']:checked`) || {}).value || 'None';
+          const partySizeEl = document.getElementById(`party-size-${index}`);
+          const partySize = partySizeEl ? partySizeEl.value : '1';
+          const clearedEl = document.getElementById(`cleared-${index}`);
+          const cleared = clearedEl ? clearedEl.checked : false;
+          return { difficulty, partySize, cleared };
+        });
+        localStorage.setItem('liberationCalcState', JSON.stringify(state));
+      } catch (e) {
+        console.error('Failed to save state', e);
+      }
+    }
+
+    /**
+     * Load saved selections and theme from localStorage if present
+     */
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('liberationCalcState');
+        if (!saved) return;
+        const state = JSON.parse(saved);
+        if (state.stageIdx !== undefined) {
+          document.getElementById('stage').value = state.stageIdx;
+        }
+        if (state.currentTraces !== undefined) {
+          document.getElementById('currentTraces').value = state.currentTraces;
+        }
+        if (state.startDate) {
+          document.getElementById('startDate').value = state.startDate;
+        }
+        if (state.genesisPass !== undefined) {
+          document.getElementById('genesisPass').checked = state.genesisPass;
+        }
+        // apply boss settings
+        if (Array.isArray(state.bosses)) {
+          state.bosses.forEach((b, i) => {
+            // difficulty
+            const diffInput = document.querySelector(`input[name='difficulty-${i}'][value='${b.difficulty}']`);
+            if (diffInput) {
+              diffInput.checked = true;
+            }
+            // party size
+            const sizeEl = document.getElementById(`party-size-${i}`);
+            if (sizeEl && b.partySize) {
+              sizeEl.value = b.partySize;
+            }
+            // cleared toggle
+            const clrEl = document.getElementById(`cleared-${i}`);
+            if (clrEl) {
+              clrEl.checked = !!b.cleared;
+            }
+          });
+        }
+        // apply theme
+        if (state.theme === 'light') {
+          document.body.classList.add('light');
+          document.getElementById('themeToggle').checked = false;
+          document.getElementById('themeLabel').textContent = 'Light';
+        } else {
+          document.body.classList.remove('light');
+          document.getElementById('themeToggle').checked = true;
+          document.getElementById('themeLabel').textContent = 'Dark';
+        }
+      } catch (e) {
+        console.error('Failed to load state', e);
+      }
+    }
+
+    /**
+     * Update the current theme based on the toggle state
+     */
+    function updateTheme() {
+      const toggle = document.getElementById('themeToggle');
+      if (!toggle) return;
+      const isDark = toggle.checked;
+      if (isDark) {
+        document.body.classList.remove('light');
+        document.getElementById('themeLabel').textContent = 'Dark';
+      } else {
+        document.body.classList.add('light');
+        document.getElementById('themeLabel').textContent = 'Light';
+      }
+      saveState();
+    }
+
+    // Attach listeners to persist state
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load any saved state after DOM and boss rows created
+      loadState();
+      // theme toggle event
+      const themeToggleEl = document.getElementById('themeToggle');
+      themeToggleEl.addEventListener('change', updateTheme);
+      // Save on config changes
+      const configPanel = document.querySelector('.config-panel');
+      configPanel.addEventListener('change', () => {
+        // After any change in the config, save the state
+        saveState();
+      });
+
+      // Attach change listeners for Lotus difficulty to enforce party size cap when Extreme is selected
+      document.querySelectorAll("input[name='difficulty-0']").forEach(el => {
+        el.addEventListener('change', updateLotusPartyOptions);
+      });
+      // Initialise Lotus party options according to saved or default state
+      updateLotusPartyOptions();
+
+      // Preset buttons events
+      document.getElementById('noobPreset').addEventListener('click', () => {
+        applyNoobPreset();
+      });
+      document.getElementById('expertPreset').addEventListener('click', () => {
+        applyExpertPreset();
+      });
+      document.getElementById('toggleClearedPreset').addEventListener('click', () => {
+        toggleClearedPreset();
+      });
+    });
+
+    /**
+     * Apply the "Noob" preset: select the hardest non-extreme difficulty for all bosses and
+     * set party size to 6. If the selected difficulty for Lotus is Extreme, cap party size at 2.
+     */
+    function applyNoobPreset() {
+      bossData.forEach((boss, index) => {
+        // determine highest difficulty excluding 'Extreme'
+        let highest = 'None';
+        Object.keys(boss.difficulties).forEach(diffName => {
+          if (diffName !== 'None' && diffName !== 'Extreme') {
+            highest = diffName;
+          }
+        });
+        const diffRadio = document.querySelector(`input[name='difficulty-${index}'][value='${highest}']`);
+        if (diffRadio) diffRadio.checked = true;
+        const sizeEl = document.getElementById(`party-size-${index}`);
+        if (sizeEl) {
+          // if Lotus and highest difficulty is 'Extreme', cap at 2
+          if (index === 0 && highest === 'Extreme') {
+            sizeEl.value = '2';
+          } else {
+            sizeEl.value = '6';
+          }
+        }
+      });
+      updateLotusPartyOptions();
+      saveState();
+    }
+
+    /**
+     * Apply the "Expert/RayRB Level" preset: select the hardest non-extreme difficulty for all bosses and
+     * set party size to 1.
+     */
+    function applyExpertPreset() {
+      bossData.forEach((boss, index) => {
+        let highest = 'None';
+        Object.keys(boss.difficulties).forEach(diffName => {
+          if (diffName !== 'None' && diffName !== 'Extreme') {
+            highest = diffName;
+          }
+        });
+        const diffRadio = document.querySelector(`input[name='difficulty-${index}'][value='${highest}']`);
+        if (diffRadio) diffRadio.checked = true;
+        const sizeEl = document.getElementById(`party-size-${index}`);
+        if (sizeEl) {
+          sizeEl.value = '1';
+        }
+      });
+      updateLotusPartyOptions();
+      saveState();
+    }
+
+    /**
+     * Toggle all cleared switches: if any boss is currently not cleared, mark all as cleared; otherwise mark all as not cleared.
+     */
+    function toggleClearedPreset() {
+      // Determine if all bosses are cleared
+      let allCleared = true;
+      bossData.forEach((boss, index) => {
+        const clearedEl = document.getElementById(`cleared-${index}`);
+        if (clearedEl && !clearedEl.checked) {
+          allCleared = false;
+        }
+      });
+      // Toggle accordingly
+      bossData.forEach((boss, index) => {
+        const clearedEl = document.getElementById(`cleared-${index}`);
+        if (clearedEl) {
+          clearedEl.checked = !allCleared;
+        }
+      });
+      saveState();
+    }
+
+    /**
+     * Enforce the rule that Extreme Lotus can only have up to 2 party members. Disables options above 2 and adjusts
+     * the selected value if necessary.
+     */
+    function updateLotusPartyOptions() {
+      const lotusDiffInput = document.querySelector("input[name='difficulty-0']:checked");
+      if (!lotusDiffInput) return;
+      const sizeEl = document.getElementById('party-size-0');
+      if (!sizeEl) return;
+      const selectedDiff = lotusDiffInput.value;
+      const maxParty = (selectedDiff === 'Extreme') ? 2 : 6;
+      Array.from(sizeEl.options).forEach(opt => {
+        const val = parseInt(opt.value);
+        opt.disabled = val > maxParty;
+      });
+      if (parseInt(sizeEl.value) > maxParty) {
+        sizeEl.value = String(maxParty);
+      }
+    }
   </script>
 </body>
 </html>
